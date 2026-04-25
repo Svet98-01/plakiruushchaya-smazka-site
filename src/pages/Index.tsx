@@ -129,12 +129,19 @@ export default function Index() {
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-10 py-5"
         style={{ background: "linear-gradient(180deg, rgba(10,15,30,0.97) 0%, transparent 100%)" }}
       >
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           <img
-            src="https://cdn.poehali.dev/files/fcccd40f-5dce-43ef-87fc-e23925dc5164.png"
+            src="https://cdn.poehali.dev/projects/613015e9-5a04-4be5-8e21-6245ef31f3c9/bucket/2ef6041d-b889-4046-8136-2168b85d4197.jpg"
             alt="AvtoVitamin"
-            className="h-20 md:h-24 w-auto object-contain"
+            className="h-14 w-14 object-contain"
+            style={{ mixBlendMode: "multiply", filter: "contrast(1.1)" }}
           />
+          <span
+            className="font-bold tracking-widest uppercase text-sm"
+            style={{ fontFamily: "'Oswald', sans-serif", color: "var(--gold)" }}
+          >
+            AvtoVitamin
+          </span>
         </div>
 
         <div className="hidden md:flex items-center gap-8">
