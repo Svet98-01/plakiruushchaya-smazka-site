@@ -45,19 +45,9 @@ const applications = [
 export default function Index() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentSection, setCurrentSection] = useState(0);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [formData, setFormData] = useState({ name: "", phone: "", email: "", message: "" });
   const [formStatus, setFormStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
 
   const handleFormSubmit = async () => {
     if (!formData.name.trim()) { setFormStatus("error"); return; }
@@ -76,15 +66,10 @@ export default function Index() {
 
   const scrollToSection = (index: number) => {
     if (!containerRef.current) return;
-    if (window.innerWidth < 768) {
-      const sections = containerRef.current.querySelectorAll<HTMLElement>(".h-scroll-section");
-      const target = sections[index];
-      if (target) {
-        containerRef.current.scrollTo({ top: target.offsetTop - 80, behavior: "smooth" });
-      }
-    } else {
-      const target = index * window.innerWidth;
-      containerRef.current.scrollTo({ left: target, behavior: "smooth" });
+    const sections = containerRef.current.querySelectorAll<HTMLElement>(".h-scroll-section");
+    const target = sections[index];
+    if (target) {
+      containerRef.current.scrollTo({ top: target.offsetTop, behavior: "smooth" });
     }
     setCurrentSection(index);
   };
@@ -92,57 +77,6 @@ export default function Index() {
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    if (isMobile) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      if (isScrolling) return;
-
-      const delta = e.deltaY || e.deltaX;
-      if (Math.abs(delta) < 10) return;
-
-      setIsScrolling(true);
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-
-      if (delta > 0 && currentSection < SECTIONS.length - 1) {
-        scrollToSection(currentSection + 1);
-      } else if (delta < 0 && currentSection > 0) {
-        scrollToSection(currentSection - 1);
-      }
-
-      scrollTimeoutRef.current = setTimeout(() => setIsScrolling(false), 800);
-    };
-
-    container.addEventListener("wheel", handleWheel, { passive: false });
-    return () => container.removeEventListener("wheel", handleWheel);
-  }, [currentSection, isScrolling, isMobile]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    if (isMobile) return;
-
-    let touchStartX = 0;
-    const handleTouchStart = (e: TouchEvent) => { touchStartX = e.touches[0].clientX; };
-    const handleTouchEnd = (e: TouchEvent) => {
-      const diff = touchStartX - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 50) {
-        if (diff > 0 && currentSection < SECTIONS.length - 1) scrollToSection(currentSection + 1);
-        else if (diff < 0 && currentSection > 0) scrollToSection(currentSection - 1);
-      }
-    };
-
-    container.addEventListener("touchstart", handleTouchStart);
-    container.addEventListener("touchend", handleTouchEnd);
-    return () => {
-      container.removeEventListener("touchstart", handleTouchStart);
-      container.removeEventListener("touchend", handleTouchEnd);
-    };
-  }, [currentSection, isMobile]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container || !isMobile) return;
     const onScroll = () => {
       const sections = container.querySelectorAll<HTMLElement>(".h-scroll-section");
       const scrollTop = container.scrollTop + window.innerHeight / 3;
@@ -154,7 +88,7 @@ export default function Index() {
     };
     container.addEventListener("scroll", onScroll, { passive: true });
     return () => container.removeEventListener("scroll", onScroll);
-  }, [isMobile]);
+  }, []);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden" style={{ background: "var(--dark-bg)" }}>
@@ -195,12 +129,12 @@ export default function Index() {
         </button>
       </nav>
 
-      {/* Scroll Container — horizontal on desktop, vertical on mobile */}
+      {/* Vertical Scroll Container */}
       <div
         ref={containerRef}
-        className="h-scroll-root h-scroll-wrapper flex h-screen overflow-x-hidden overflow-y-hidden"
-        style={{ scrollSnapType: isMobile ? "none" : "x mandatory", width: "100vw" }}
+        className="h-scroll-root"
       >
+        <div className="h-scroll-wrapper">
         {/* ===== SECTION 1: HERO ===== */}
         <section
           className="h-scroll-section scanlines"
@@ -616,6 +550,7 @@ export default function Index() {
             </div>
           </div>
         </section>
+        </div>
       </div>
 
       {/* Navigation dots */}

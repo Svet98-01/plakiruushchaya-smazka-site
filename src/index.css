@@ -63,54 +63,47 @@
   }
 }
 
-/* Horizontal scroll container */
-.h-scroll-container {
-  display: flex;
-  width: 500vw;
+/* Vertical scroll container (works on all devices) */
+.h-scroll-root {
+  width: 100vw;
   height: 100vh;
-  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.h-scroll-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: auto;
+  overflow: visible;
+  scroll-snap-type: none;
 }
 
 .h-scroll-section {
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
+  height: auto;
   flex-shrink: 0;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  scroll-snap-align: start;
 }
 
-/* Mobile: vertical scroll instead of horizontal */
+.h-scroll-section > .relative.z-10 {
+  min-height: 100vh;
+  padding-top: 120px;
+  padding-bottom: 80px;
+  box-sizing: border-box;
+}
+
 @media (max-width: 767px) {
-  .h-scroll-root {
-    width: 100vw !important;
-    height: 100vh !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-  }
-
-  .h-scroll-wrapper {
-    flex-direction: column !important;
-    width: 100vw !important;
-    height: auto !important;
-    overflow: visible !important;
-    scroll-snap-type: none !important;
-  }
-
-  .h-scroll-section {
-    width: 100vw !important;
-    height: auto !important;
-    min-height: auto !important;
-    scroll-snap-align: none !important;
-    overflow: visible !important;
-  }
-
   .h-scroll-section > .relative.z-10 {
-    height: auto !important;
-    min-height: auto !important;
-    padding-top: 110px !important;
-    padding-bottom: 60px !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+    padding-top: 100px;
+    padding-bottom: 60px;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
   .scanlines::after {
