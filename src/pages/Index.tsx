@@ -133,7 +133,7 @@ export default function Index() {
           <img
             src="https://cdn.poehali.dev/files/9a1041b5-68b3-46de-9380-6d146089d79f.jpg"
             alt="AvtoVitamin"
-            className="h-28 w-28 object-contain"
+            className="h-56 w-56 object-contain"
             style={{ mixBlendMode: "multiply", filter: "contrast(1.1)" }}
           />
           <span
