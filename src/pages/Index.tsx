@@ -192,7 +192,7 @@ export default function Index() {
             >
               <span className="block text-white">Безызносные</span>
               <span className="block gold-text">Решения</span>
-              <span className="block text-white" style={{ fontSize: "0.55em", lineHeight: 1.3 }}>для «Двигателей<br/>Внутреннего Сгорания»</span>
+              <span className="block text-white" style={{ fontSize: "0.55em", lineHeight: 1.3 }}>для «Любых Типов Механизмов<br/>с Трущимися Деталями»</span>
             </h1>
 
             <p
