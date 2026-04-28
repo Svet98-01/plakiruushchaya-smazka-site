@@ -131,7 +131,7 @@ export default function Index() {
       >
         <div className="flex items-center gap-3">
           <img
-            src="https://cdn.poehali.dev/projects/613015e9-5a04-4be5-8e21-6245ef31f3c9/bucket/2ef6041d-b889-4046-8136-2168b85d4197.jpg"
+            src="https://cdn.poehali.dev/files/9a1041b5-68b3-46de-9380-6d146089d79f.jpg"
             alt="AvtoVitamin"
             className="h-14 w-14 object-contain"
             style={{ mixBlendMode: "multiply", filter: "contrast(1.1)" }}
