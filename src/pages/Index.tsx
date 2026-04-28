@@ -46,10 +46,18 @@ export default function Index() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentSection, setCurrentSection] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [formData, setFormData] = useState({ name: "", phone: "", email: "", message: "" });
   const [formStatus, setFormStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const handleFormSubmit = async () => {
     if (!formData.name.trim()) { setFormStatus("error"); return; }
@@ -68,14 +76,23 @@ export default function Index() {
 
   const scrollToSection = (index: number) => {
     if (!containerRef.current) return;
-    const target = index * window.innerWidth;
-    containerRef.current.scrollTo({ left: target, behavior: "smooth" });
+    if (window.innerWidth < 768) {
+      const sections = containerRef.current.querySelectorAll<HTMLElement>(".h-scroll-section");
+      const target = sections[index];
+      if (target) {
+        containerRef.current.scrollTo({ top: target.offsetTop - 80, behavior: "smooth" });
+      }
+    } else {
+      const target = index * window.innerWidth;
+      containerRef.current.scrollTo({ left: target, behavior: "smooth" });
+    }
     setCurrentSection(index);
   };
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    if (isMobile) return;
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
@@ -98,11 +115,12 @@ export default function Index() {
 
     container.addEventListener("wheel", handleWheel, { passive: false });
     return () => container.removeEventListener("wheel", handleWheel);
-  }, [currentSection, isScrolling]);
+  }, [currentSection, isScrolling, isMobile]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
+    if (isMobile) return;
 
     let touchStartX = 0;
     const handleTouchStart = (e: TouchEvent) => { touchStartX = e.touches[0].clientX; };
@@ -120,24 +138,40 @@ export default function Index() {
       container.removeEventListener("touchstart", handleTouchStart);
       container.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [currentSection]);
+  }, [currentSection, isMobile]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !isMobile) return;
+    const onScroll = () => {
+      const sections = container.querySelectorAll<HTMLElement>(".h-scroll-section");
+      const scrollTop = container.scrollTop + window.innerHeight / 3;
+      let active = 0;
+      sections.forEach((s, idx) => {
+        if (s.offsetTop <= scrollTop) active = idx;
+      });
+      setCurrentSection(active);
+    };
+    container.addEventListener("scroll", onScroll, { passive: true });
+    return () => container.removeEventListener("scroll", onScroll);
+  }, [isMobile]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden" style={{ background: "var(--dark-bg)" }}>
       {/* Fixed Navigation */}
       <nav
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-10 py-5"
-        style={{ background: "linear-gradient(180deg, rgba(10,15,30,0.97) 0%, transparent 100%)" }}
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-10 py-3 md:py-5"
+        style={{ background: "linear-gradient(180deg, rgba(10,15,30,0.97) 0%, rgba(10,15,30,0.85) 70%, transparent 100%)" }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           <img
             src="https://cdn.poehali.dev/files/9a1041b5-68b3-46de-9380-6d146089d79f.jpg"
             alt="AvtoVitamin"
-            className="h-28 w-28 object-contain"
+            className="h-12 w-12 md:h-28 md:w-28 object-contain"
             style={{ mixBlendMode: "multiply", filter: "contrast(1.1)" }}
           />
           <span
-            className="font-bold tracking-widest uppercase text-sm"
+            className="font-bold tracking-widest uppercase text-xs md:text-sm"
             style={{ fontFamily: "'Oswald', sans-serif", color: "var(--gold)" }}
           >
             AvtoVitamin
@@ -156,16 +190,16 @@ export default function Index() {
           ))}
         </div>
 
-        <button className="btn-gold text-xs" onClick={() => scrollToSection(4)}>
+        <button className="btn-gold text-[10px] md:text-xs" style={{ padding: "8px 16px" }} onClick={() => scrollToSection(4)}>
           Связаться
         </button>
       </nav>
 
-      {/* Horizontal Scroll Container */}
+      {/* Scroll Container — horizontal on desktop, vertical on mobile */}
       <div
         ref={containerRef}
-        className="flex h-screen overflow-x-hidden overflow-y-hidden"
-        style={{ scrollSnapType: "x mandatory", width: "100vw" }}
+        className="h-scroll-root h-scroll-wrapper flex h-screen overflow-x-hidden overflow-y-hidden"
+        style={{ scrollSnapType: isMobile ? "none" : "x mandatory", width: "100vw" }}
       >
         {/* ===== SECTION 1: HERO ===== */}
         <section
@@ -179,40 +213,40 @@ export default function Index() {
           <div className="absolute left-0 top-0 bottom-0 w-px" style={{ background: "linear-gradient(180deg, transparent, var(--gold), transparent)" }} />
           <div className="absolute right-16 top-0 bottom-0 w-px opacity-20" style={{ background: "linear-gradient(180deg, transparent, var(--steel), transparent)" }} />
 
-          <div className="relative z-10 flex flex-col justify-center h-full px-16 md:px-24 max-w-5xl">
+          <div className="relative z-10 flex flex-col justify-center h-full px-6 md:px-24 max-w-5xl">
             <div className="heading-line mb-4 animate-fade-in-left delay-100">
-              <span className="text-xs tracking-widest uppercase" style={{ color: "var(--gold)", fontFamily: "'Oswald', sans-serif" }}>
+              <span className="text-[10px] md:text-xs tracking-widest uppercase" style={{ color: "var(--gold)", fontFamily: "'Oswald', sans-serif" }}>
                 Инновационная защита металла
               </span>
             </div>
 
             <h1
-              className="text-6xl md:text-8xl font-bold uppercase leading-none mb-6 animate-fade-in-up delay-200"
-              style={{ fontFamily: "'Oswald', sans-serif", lineHeight: 0.9 }}
+              className="text-4xl md:text-8xl font-bold uppercase leading-none mb-6 animate-fade-in-up delay-200"
+              style={{ fontFamily: "'Oswald', sans-serif", lineHeight: 0.95 }}
             >
               <span className="block text-white">Безызносные</span>
               <span className="block gold-text">Решения</span>
-              <span className="block text-white" style={{ fontSize: "0.55em", lineHeight: 1.3 }}>для «Любых Типов Механизмов<br/>с Трущимися Деталями»</span>
+              <span className="block text-white mt-2" style={{ fontSize: "0.5em", lineHeight: 1.3 }}>для «Любых Типов Механизмов с&nbsp;Трущимися Деталями»</span>
             </h1>
 
             <p
-              className="text-lg max-w-xl mb-10 animate-fade-in-up delay-300"
+              className="text-sm md:text-lg max-w-xl mb-8 md:mb-10 animate-fade-in-up delay-300"
               style={{ color: "rgba(232,240,248,0.7)", lineHeight: 1.7, fontWeight: 300 }}
             >
               Сокращение потребления топлива от&nbsp;8 до&nbsp;20%
             </p>
 
-            <div className="flex items-center gap-4 animate-fade-in-up delay-400">
-              <button className="btn-gold" onClick={() => scrollToSection(2)}>
+            <div className="flex flex-wrap items-center gap-3 md:gap-4 animate-fade-in-up delay-400">
+              <button className="btn-gold text-xs md:text-sm" onClick={() => scrollToSection(2)}>
                 Характеристики
               </button>
-              <button className="btn-outline-gold" onClick={() => scrollToSection(1)}>
+              <button className="btn-outline-gold text-xs md:text-sm" onClick={() => scrollToSection(1)}>
                 О продукте
               </button>
             </div>
           </div>
 
-          <div className="absolute bottom-10 right-10 flex items-center gap-2 animate-fade-in-right delay-600">
+          <div className="hidden md:flex absolute bottom-10 right-10 items-center gap-2 animate-fade-in-right delay-600">
             <span className="text-xs tracking-widest uppercase" style={{ color: "var(--steel)", fontFamily: "'Oswald', sans-serif" }}>
               Далее
             </span>
@@ -230,14 +264,14 @@ export default function Index() {
         >
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 70% 50%, rgba(59,130,246,0.08) 0%, transparent 60%)" }} />
 
-          <div className="relative z-10 flex flex-col justify-center h-full px-16 md:px-24">
+          <div className="relative z-10 flex flex-col justify-center h-full px-6 md:px-24">
             <div className="heading-line mb-3">
-              <span className="text-xs tracking-widest uppercase" style={{ color: "var(--gold)", fontFamily: "'Oswald', sans-serif" }}>
+              <span className="text-[10px] md:text-xs tracking-widest uppercase" style={{ color: "var(--gold)", fontFamily: "'Oswald', sans-serif" }}>
                 О продукте
               </span>
             </div>
             <h2
-              className="text-4xl md:text-5xl font-bold uppercase mb-8"
+              className="text-3xl md:text-5xl font-bold uppercase mb-6 md:mb-8"
               style={{ fontFamily: "'Oswald', sans-serif", lineHeight: 1, color: "#fff" }}
             >
               Линейка <span className="gold-text">продуктов</span>
@@ -326,20 +360,20 @@ export default function Index() {
           <div className="absolute inset-0 grid-bg opacity-20" />
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 30% 60%, rgba(59,130,246,0.08) 0%, transparent 60%)" }} />
 
-          <div className="relative z-10 flex flex-col justify-center h-full px-16 md:px-24">
+          <div className="relative z-10 flex flex-col justify-center h-full px-6 md:px-24">
             <div className="heading-line mb-4">
-              <span className="text-xs tracking-widest uppercase" style={{ color: "var(--gold)", fontFamily: "'Oswald', sans-serif" }}>
+              <span className="text-[10px] md:text-xs tracking-widest uppercase" style={{ color: "var(--gold)", fontFamily: "'Oswald', sans-serif" }}>
                 Технические характеристики
               </span>
             </div>
             <h2
-              className="text-5xl md:text-6xl font-bold uppercase mb-12"
+              className="text-3xl md:text-6xl font-bold uppercase mb-8 md:mb-12"
               style={{ fontFamily: "'Oswald', sans-serif", lineHeight: 1, color: "#fff" }}
             >
               Параметры <span className="gold-text">эффективности</span>
             </h2>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 max-w-5xl">
               {specs.map((spec, i) => (
                 <div key={i} className="spec-card p-6">
                   <div
@@ -359,16 +393,16 @@ export default function Index() {
             </div>
 
             <div
-              className="mt-10 max-w-5xl p-5 flex items-center justify-between"
+              className="mt-8 md:mt-10 max-w-5xl p-4 md:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
               style={{ background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.15)" }}
             >
               <div className="flex items-center gap-3">
                 <Icon name="Award" size={20} color="var(--gold)" />
-                <span className="text-sm" style={{ color: "rgba(232,240,248,0.8)" }}>
+                <span className="text-xs md:text-sm" style={{ color: "rgba(232,240,248,0.8)" }}>
                   Соответствует требованиям ГОСТ Р 51634, ISO 6743-99
                 </span>
               </div>
-              <span className="text-xs" style={{ color: "var(--steel)", fontFamily: "'Oswald', sans-serif" }}>
+              <span className="text-[10px] md:text-xs" style={{ color: "var(--steel)", fontFamily: "'Oswald', sans-serif" }}>
                 СЕРТИФИЦИРОВАНО
               </span>
             </div>
@@ -385,14 +419,14 @@ export default function Index() {
         >
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 80% 30%, rgba(249,115,22,0.07) 0%, transparent 50%)" }} />
 
-          <div className="relative z-10 flex flex-col justify-center h-full px-16 md:px-24">
+          <div className="relative z-10 flex flex-col justify-center h-full px-6 md:px-24">
             <div className="heading-line mb-4">
-              <span className="text-xs tracking-widest uppercase" style={{ color: "var(--gold)", fontFamily: "'Oswald', sans-serif" }}>
+              <span className="text-[10px] md:text-xs tracking-widest uppercase" style={{ color: "var(--gold)", fontFamily: "'Oswald', sans-serif" }}>
                 Область применения
               </span>
             </div>
             <h2
-              className="text-5xl md:text-6xl font-bold uppercase mb-12"
+              className="text-3xl md:text-6xl font-bold uppercase mb-8 md:mb-12"
               style={{ fontFamily: "'Oswald', sans-serif", lineHeight: 1, color: "#fff" }}
             >
               Где работает <span className="gold-text">защита</span>
@@ -448,18 +482,18 @@ export default function Index() {
           <div className="absolute inset-0 grid-bg opacity-10" />
           <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(59,130,246,0.08) 0%, transparent 70%)" }} />
 
-          <div className="relative z-10 flex items-center justify-center h-full px-8">
+          <div className="relative z-10 flex items-center justify-center h-full px-4 md:px-8">
             <div className="w-full max-w-4xl">
-              <div className="text-center mb-12">
+              <div className="text-center mb-8 md:mb-12">
                 <div className="flex justify-center mb-4">
                   <div className="heading-line">
-                    <span className="text-xs tracking-widest uppercase" style={{ color: "var(--gold)", fontFamily: "'Oswald', sans-serif" }}>
+                    <span className="text-[10px] md:text-xs tracking-widest uppercase" style={{ color: "var(--gold)", fontFamily: "'Oswald', sans-serif" }}>
                       Контакты
                     </span>
                   </div>
                 </div>
                 <h2
-                  className="text-5xl md:text-6xl font-bold uppercase"
+                  className="text-3xl md:text-6xl font-bold uppercase"
                   style={{ fontFamily: "'Oswald', sans-serif", lineHeight: 1, color: "#fff" }}
                 >
                   Напишите <span className="gold-text">нам</span>
@@ -471,7 +505,7 @@ export default function Index() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div
-                  className="p-8 relative corner-tl corner-br"
+                  className="p-5 md:p-8 relative corner-tl corner-br"
                   style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(59,130,246,0.2)" }}
                 >
                   <div className="space-y-4">
@@ -585,7 +619,7 @@ export default function Index() {
       </div>
 
       {/* Navigation dots */}
-      <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
+      <div className="hidden md:flex fixed right-6 top-1/2 -translate-y-1/2 z-50 flex-col gap-3">
         {SECTIONS.map((_, i) => (
           <button
             key={i}
@@ -597,7 +631,7 @@ export default function Index() {
       </div>
 
       {/* Section counter */}
-      <div className="fixed bottom-6 left-10 z-50 flex items-center gap-3" style={{ fontFamily: "'Oswald', sans-serif" }}>
+      <div className="hidden md:flex fixed bottom-6 left-10 z-50 items-center gap-3" style={{ fontFamily: "'Oswald', sans-serif" }}>
         <span className="text-2xl font-bold" style={{ color: "var(--gold)" }}>
           0{currentSection + 1}
         </span>

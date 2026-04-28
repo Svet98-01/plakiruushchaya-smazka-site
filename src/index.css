@@ -79,6 +79,45 @@
   overflow: hidden;
 }
 
+/* Mobile: vertical scroll instead of horizontal */
+@media (max-width: 767px) {
+  .h-scroll-root {
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .h-scroll-wrapper {
+    flex-direction: column !important;
+    width: 100vw !important;
+    height: auto !important;
+    overflow: visible !important;
+    scroll-snap-type: none !important;
+  }
+
+  .h-scroll-section {
+    width: 100vw !important;
+    height: auto !important;
+    min-height: auto !important;
+    scroll-snap-align: none !important;
+    overflow: visible !important;
+  }
+
+  .h-scroll-section > .relative.z-10 {
+    height: auto !important;
+    min-height: auto !important;
+    padding-top: 110px !important;
+    padding-bottom: 60px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .scanlines::after {
+    display: none;
+  }
+}
+
 /* Metal texture overlay */
 .metal-overlay {
   background:
